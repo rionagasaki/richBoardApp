@@ -1,0 +1,51 @@
+body {
+    text-align: center;
+    background-color: #fafafa;
+
+}
+
+.form-wrapper {
+    background: #343a41;
+    opacity: 0.8;
+    margin: 3em auto;
+    padding: 0 1em;
+    max-width: 370px;
+    height: 500px;
+  }
+
+h1 {
+    color:#fff;
+}
+
+.footer {
+    font-size: 10px;
+    color:#fff;
+}
+
+
+
+.button{
+    margin: 20px;
+   
+    top: 20px;
+    width: 100px;
+    height: 30px;
+
+}
+
+.email{
+    margin-bottom:10px;
+
+}
+
+.name{
+    margin-top: 10px;
+}
+
+.attention{
+    color:orange;
+}
+
+[v-cloak]{  
+    display:none;
+  }

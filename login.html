@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"  href="css/todo.css">
+    
+    <title>Document</title>
+</head>
+<body>
+    <div class="form-wrapper" id="app">
+        <h1>ログイン</h1>
+        <form id = "js-form">
+          <div class="form-item">
+            <label for="email"></label>
+            <input class="email" id="register-email" type="email" placeholder="メールアドレス" value="" v-model="mailaddress"></input>
+          </div>
+          <div class="form-item">
+            <label for="password"></label>
+            <input class="password" id="register-password" type="password"   placeholder="パスワード" value="" v-model="pass"></input>
+          </div>
+          
+          <div class="button-panel" >
+            <p v-if="display" class="attention" v-cloak>{{ message }}</p>
+            <button id="login" type="submit" class="button" title="Sign In" v-on:click="clickFunc">
+              ログイン
+            </button>
+        </div>
+      </form>
+      <footer>
+        <a class="footer" href="index.html">新しくアカウント作成される方はこちら</a>
+      </footer>
+  
+    </div>
+    
+    
+    <script type="module">
+      import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js';
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-analytics.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-auth.js"
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+    import { collection, addDoc, getDocs, where, query } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+    import Vue from 'https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.esm.browser.js'
+    const firebaseConfig = {
+      apiKey: "AIzaSyDIG_J2vpD56h-nVci51tJdBHfBXPOyaiw",
+  authDomain: "fir-app-6f219.firebaseapp.com",
+  projectId: "fir-app-6f219",
+  storageBucket: "fir-app-6f219.appspot.com",
+  messagingSenderId: "660943630407",
+  appId: "1:660943630407:web:a068b140722aa7c0c68162",
+  measurementId: "G-6QG0HP0Y44"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const address = document.getElementById('register-email');
+const password = document.getElementById('register-password');
+const button = document.getElementById('login');
+const userArray = [];
+const userArray2 = [];
+
+new Vue({
+  el: '#app',
+  data: ({
+    message: 'アカウントが見つかりませんでした。',
+    display: false,
+    mailaddress: '',
+    pass: ''
+  }),
+  methods: ({
+   clickFunc: async function(event){
+     event.preventDefault();
+     console.log("osareta");
+     console.log(address.value);
+    const querySnapshot = await getDocs(collection(db, "users"));
+    querySnapshot.forEach((doc) => {
+  console.log(`${doc.id} => ${doc.data().email}`);
+  userArray.push(doc.data().email);
+  userArray2.push(doc.data().password);
+  
+});
+
+
+     if (userArray.find(value => value === this.mailaddress) && userArray2.find(value => value === this.pass)){
+       console.log(userArray);
+       const auth = getAuth();
+       this.display = false;
+  signInWithEmailAndPassword(auth, this.mailaddress, this.pass)
+  .then((userCredential) => {
+    location.href = "home.html";
+    const user = userCredential.user;
+    console.log(user);
+    
+  })
+  }else {
+       this.display = true;
+     }
+     }
+  })
+})
+
+
+
+button.addEventListener('click',function(event){
+  event.preventDefault();
+  console.log(address.value);
+  
+  const f3 = async()=>{
+    const querySnapshot = await getDocs(collection(db, "users"));
+    querySnapshot.forEach((doc) => {
+  console.log(`${doc.id} => ${doc.data().email}`);
+  userArray.push(doc.data().email);
+  userArray2.push(doc.data().password);
+  
+});
+console.log(userArray);
+console.log(address.value);
+if (userArray.find(value => value === address.value) && userArray2.find(value => value === password.value)){
+  
+  const auth = getAuth();
+  signInWithEmailAndPassword(auth, address.value, password.value)
+  .then((userCredential) => {
+    location.href = "home.html";
+    const user = userCredential.user;
+    console.log(user);
+    alert("Login Success!!");
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    
+  });
+
+  
+}else{
+  alert("アカウントが見つかりませんでした。");
+}}
+
+f3();
+    
+
+});
+ </script>
+</body>
+
+</html>

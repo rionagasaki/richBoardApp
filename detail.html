@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/home.css"></style>
+    <title>Document</title>
+</head>
+<body>
+  <div style="background-color:#343a40; position:relative;">
+    <h1 style="font-family: serif; color:white; display:inline;">~Favorite Posts~</h1>
+    <a href="home.html" style="right:10px; color:white; position:absolute; right:50px; top:15px;">back</a>
+  </div>
+  <ul class="task_list" id="app" style="text-align:center;">
+    <li v-for="onetitle in titles" style="list-style:none;">
+    
+    <hr  style="height:6px; background-color:#ff9999;">
+    <br>
+    <h4 style="font-weight:heavy;">{{onetitle.title}}</h4>
+    <br>
+    <p>{{onetitle.content}}</p>
+    <br>
+    <p>by {{onetitle.userName}}</p>
+    <br>
+    <button style="color:blue; background-color:yellow" v-on:click="clicked(onetitle.id)" v-for="onesrc in onetitle.src" disabled>いいね済
+      <img v-cloak v-bind:src="onesrc" class="imageClass" v-bind:id="onetitle.id"></button>
+    <br>
+    <br>
+    <textarea type="text" placeholder="コメント入力" v-model="comment" style="resize:none;" rows="4" cols="40"></textarea>
+    <br>
+    <p style="color:red;" v-if="display" v-cloak>何か入力してください。</p>
+    <button style="background-color:blue; color:white;" v-on:click="commentFunc(onetitle.id)">コメントする</button>
+    <br>
+    <br>
+    <h5 v-if="commentAll">コメント一覧</h5>
+    <ul v-for="onecomment in comments">
+      <li style="list-style:none;" v-if="onecomment.postid == onetitle.id">{{onecomment.content}} by <a style="color:cadetblue; cursor:pointer;" v-on:click="userClick(onecomment.name)">{{onecomment.name}}</a><button v-on:click="deleteComment(onecomment.commentID)" v-if="onecomment.name ==  displayName" >削除</button></li>
+
+    </ul>
+    
+    <br>
+    <hr>
+    
+    </li>
+    </ul>
+    
+</body>
+<script type="module">
+
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js';
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-auth.js"
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+    import { collection, addDoc, getDocs, getDoc, where, query,orderBy, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+    import Vue from 'https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.esm.browser.js'
+
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDIG_J2vpD56h-nVci51tJdBHfBXPOyaiw",
+  authDomain: "fir-app-6f219.firebaseapp.com",
+  projectId: "fir-app-6f219",
+  storageBucket: "fir-app-6f219.appspot.com",
+  messagingSenderId: "660943630407",
+  appId: "1:660943630407:web:a068b140722aa7c0c68162",
+  measurementId: "G-6QG0HP0Y44"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const init = new Vue({
+  el: '#app',
+    data: ({
+      good: true,
+      titles:[],
+      comment:'',
+      commentID:'',
+      comments:[],
+      display: false,
+      commentAll: false,
+      displayName:'',
+      deleteButton:false,
+      userid:'',
+      keyword:'',
+      
+      
+    }),
+    methods:({
+      mainPost: async function(){
+    //firestoreデータ取得
+    const querySnapshot = await getDocs(collection(db, "post"),orderBy('date'));
+    querySnapshot.forEach((doc1) => {
+      
+      let date = String(doc1.data().date.toDate());
+      let displayDate = date.slice(0,21);
+      let title = {
+        title: doc1.data().title,
+        content: doc1.data().contents,
+        userName: doc1.data().user_name,
+        id: doc1.id,
+        goods: doc1.data().good,
+        postDate: displayDate,
+        Comment: doc1.data().comment,
+        sortDate: doc1.data().date.toDate(),
+        src: [],
+        commentOK:[]
+      }
+      
+     
+
+     const postID = document.getElementById(doc1.id);
+     console.log(postID);
+
+     
+     
+     const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+        //signed up user exist!
+        if (user) {
+          console.log(user);
+          const uid = user.uid;
+          this.userid = uid;
+          console.log(this.userid);
+          const displayName = user.displayName;
+          this.displayName = displayName;
+         
+  
+          console.log(displayName);
+          const Goodnum = doc1.data().good;
+         let newArray = Object.values(Goodnum);
+         
+            if(newArray.find(value =>
+            value === uid)){
+             title.src.push("hearted.png");
+             this.titles.push(title)
+            }else{
+              title.src.push("unheart.png");
+            }
+        }else{
+            
+            location.href = "login.html"
+        }
+        })
+      
+    })
+  },
+  mainComment: async function(){
+
+    this.comments.length = 0;
+    const querySnapshot1 = await getDocs(collection(db,"comment"));
+    querySnapshot1.forEach((doc2)=>{
+      let come = {
+        name: doc2.data().name,
+        content: doc2.data().comment,
+        postid: doc2.data().psD,
+        commentID: doc2.id
+      }
+
+      this.comments.push(come);
+
+      
+    })
+    
+  },
+  //コメント投稿されたとき
+     commentFunc: async function(e){
+        if (this.comment === ''){
+          this.display = true;
+          return
+        }
+        const docData = {
+          name: this.displayName,
+          userID: this.userid,
+          psD: e,
+          comment: this.comment
+        }
+        await addDoc(collection(db,"comment"), docData);
+        this.display = false;
+        this.comment = "";
+        init.mainComment();
+        // const docRef = doc(db, "post", e);
+        // const docSnap = await getDoc(docRef);
+        // const washingtonRef = doc(db, "post", e);
+        //         await updateDoc(washingtonRef, {
+        //       comment: arrayUnion(`${this.comment} by${this.displayName}`)
+        //       })
+         
+        //       this.comment = '';
+        //       this.display = false;
+        //       location.reload();
+              
+     },
+     userClick: async function(username){
+         console.log(username);
+         this.comment = this.comment + '<< ' + username;
+     },
+
+     //コメントが消されたとき
+     deleteComment: async function(e){
+      await deleteDoc(doc(db, "comment", e));
+      init.mainComment();
+
+     },
+     
+
+     
+    })
+})
+init.mainPost();
+init.mainComment();
+
+
+</script>
+</html>

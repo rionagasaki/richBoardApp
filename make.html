@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/make.css">
+    <title>Document</title>
+</head>
+<body>
+    <h1 class="make">作成</h1>
+    <div>
+        <label for="username" style="color:white;">タイトル</label>
+        <br>
+        <input type="text" name="username" id="post-title">
+    
+      </div>
+      <div>
+        <label for="profile" style="color:white;">内容</label>
+        <br>
+        <textarea name="profile" rows="10" cols="40" id="post-content"></textarea>
+        <br>
+        <input type="file" name="example" accept=".png" id="postImage"> 
+        <button id="post-button">
+            投稿する
+        </button>
+      </div>
+      <footer>
+          <a href="home.html" class="footer" style="color:white;">ホーム画面に戻る</a>
+      </footer>
+      <script type="module">
+          import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js';
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-analytics.js";
+    import {  getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-auth.js"
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+    import { collection, addDoc, getDocs, where, query } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+    import { orderBy, limit, Timestamp } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+    
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyDIG_J2vpD56h-nVci51tJdBHfBXPOyaiw",
+  authDomain: "fir-app-6f219.firebaseapp.com",
+  projectId: "fir-app-6f219",
+  storageBucket: "fir-app-6f219.appspot.com",
+  messagingSenderId: "660943630407",
+  appId: "1:660943630407:web:a068b140722aa7c0c68162",
+  measurementId: "G-6QG0HP0Y44"
+};
+
+
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let uid = "";
+let email = "";
+let name1="";
+
+
+const getEmail = async()=> {
+  
+  const q = query(collection(db, "users"), where("email", "==", email));
+
+const querySnapshot = await getDocs(q);
+querySnapshot.forEach((doc) => {
+  console.log("aaaa");
+  // doc.data() is never undefined for query doc snapshots
+  console.log(doc.id, " => ", doc.data().name);
+  name1 = doc.data().name;
+  console.log(name1);
+
+});
+}
+
+const auth = getAuth();
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    
+    uid = user.uid;
+    email = user.email
+    getEmail();
+
+    console.log(uid, email);
+    // ...
+  } else {
+    console.error('error/no-signInUser');
+  }
+});
+
+const title = document.getElementById("post-title");
+const content = document.getElementById("post-content");
+const post = document.getElementById("post-button");
+const postimage = document.getElementById("postImage");
+
+post.addEventListener('click', function(){
+    if (title.value === "" || content.value ==="") {
+       alert("空文字では投稿できません。");
+    }else{
+       
+        const asyncfunc = async ()=>{
+  try {
+
+     const docRef = await addDoc(collection(db, "post"), {
+     title: title.value,
+     contents: content.value,
+     good: [],
+     user_name: name1,
+     date: new Date(),
+     image: postimage.value
+     
+     
+   });
+  
+   location.href = "home.html"
+   
+  
+return docRef.id
+    
+}
+
+  catch (e) {
+   console.error("Error adding document: ", e);
+ }
+}
+
+asyncfunc();
+       
+    }
+})
+
+      </script>
+</body>
+
+
+
+</html>

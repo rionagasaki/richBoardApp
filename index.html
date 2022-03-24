@@ -1,0 +1,168 @@
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"  href="css/todo.css">
+    
+    <title>新規登録</title>
+    
+  </head>
+  <body>   
+    <div class="form-wrapper">
+      <h1>新規作成</h1>
+       <form id = "js-form">
+        <div class="form-item">
+          <label for="email"></label>
+          <input class="email" id="email-form-input" type="email" placeholder="メールアドレス" value="" ></input>
+        </div>
+        <div class="form-item">
+          <label for="password"></label>
+          <input class="password" id="password-form-input" type="password"   placeholder="パスワード" value=""></input>
+        </div>
+        <div class="user_name">
+          <label for="password"></label>
+          <input class="name" id="userName" type="text" placeholder="ユーザー名">
+        </div>
+        <div class="button-panel" >
+          <button id="register" type="submit" class="button" title="Sign In">
+            新規登録
+          </button>
+      </div>
+    </form>
+    <footer>
+      <a class="footer" href="login.html">既にアカウントをお持ちの方はこちら</a>
+    </footer>
+
+  </div>
+  
+  
+  <script type="module">
+  
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-app.js';
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.6/firebase-analytics.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, updateProfile} from "https://www.gstatic.com/firebasejs/9.6.6/firebase-auth.js"
+    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+    import { collection, addDoc, getDocs, where, query } from 'https://www.gstatic.com/firebasejs/9.6.6/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDIG_J2vpD56h-nVci51tJdBHfBXPOyaiw",
+  authDomain: "fir-app-6f219.firebaseapp.com",
+  projectId: "fir-app-6f219",
+  storageBucket: "fir-app-6f219.appspot.com",
+  messagingSenderId: "660943630407",
+  appId: "1:660943630407:web:a068b140722aa7c0c68162",
+  measurementId: "G-6QG0HP0Y44"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+const formElement = document.getElementById("register");
+const userArray = [];
+const address = document.querySelector("#email-form-input");
+const password = document.querySelector("#password-form-input");
+const user_name = document.getElementById("userName");
+const provider = new GoogleAuthProvider();
+
+// provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+// provider.setCustomParameters({
+//   'login_hint': 'user@example.com'
+// });
+
+
+// const auth = getAuth();
+// signInWithPopup(auth, provider)
+//   .then((result) => {
+//     // This gives you a Google Access Token. You can use it to access the Google API.
+//     const credential = GoogleAuthProvider.credentialFromResult(result);
+//     const token = credential.accessToken;
+//     // The signed-in user info.
+//     const user = result.user;
+//     console.log(user);
+//     // ...
+//   }).catch((error) => {
+//     // Handle Errors here.
+//     const errorCode = error.code;
+//     const errorMessage = error.message;
+//     // The email of the user's account used.
+//     const email = error.email;
+//     // The AuthCredential type that was used.
+//     const credential = GoogleAuthProvider.credentialFromError(error);
+//     // ...
+//   });
+
+
+formElement.addEventListener("click", (event) => {
+  event.preventDefault();
+ 
+  console.log(address.value);
+  
+  console.log(password.value);
+  console.log(user_name.value);
+  if (address.value === "" || password.value === ""|| user_name.value === ""){
+    alert('何かが空文字です。');
+  }else{
+    fn2();
+  }
+  
+  
+});
+
+async function fn2(){
+    const querySnapshot = await getDocs(collection(db, "users"));
+    querySnapshot.forEach((doc) => {
+  console.log(`${doc.id} => ${doc.data().email}`);
+  userArray.push(doc.data().email);
+  
+})
+console.log(userArray);
+console.log(address.value);
+if (userArray.find(value => value === address.value)){
+  alert("既に登録済みのアドレスです。");
+}else{
+  asyncfunc();
+}
+  
+};
+
+const asyncfunc = async()=>{
+  try {
+
+     const docRef = await addDoc(collection(db, "users"), {
+     email: address.value,
+     password: password.value,
+     name: user_name.value
+   });
+   const auth = getAuth();
+createUserWithEmailAndPassword(auth, address.value, password.value)
+  .then((userCredential) => {
+    console.log(user_name.value);
+    console.log(userCredential);
+    updateProfile(auth.currentUser, {
+  displayName: user_name.value
+}).then(function(){ location.href = "home.html"}
+)
+
+    
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    
+  });
+   
+  
+return docRef.id
+    
+}
+
+  catch (e) {
+   console.error("Error adding document: ", e);
+ }
+}
+</script>
+  
+  
+</body>
+</html>
